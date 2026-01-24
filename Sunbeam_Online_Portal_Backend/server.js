@@ -1,9 +1,11 @@
 //this is server.js file
 
 const express=require(`express`)
-
+const authRoutes=require(`./routes/users/auth`)
 const app=express()
 
+app.use(express.json())
+app.use("/auth",authRoutes);
 app.listen(`3000`,`localhost`,()=>{
       console.log(`server is started on port 3000`)
 })
