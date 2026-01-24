@@ -1,4 +1,4 @@
-const e = require("express")
+const express = require("express")
 
 //this is result.js file
 function createResult(error,data){

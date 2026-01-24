@@ -1,18 +1,18 @@
 
 
-Create database db_Sunbeam_Online_Student_Portal;
+Create database if not exist db_Sunbeam_Online_Student_Portal;
 
 Use db_Sunbeam_Online_Student_Portal;
 
 Create table if not exists users (
-     email varchar(50) not null unique,
-     password varchar(10),
-     role enum(“Student”,”Admin”) default 'Students');
+     email varchar(150) not null unique,
+     password varchar(50),
+     role enum('Student','Admin') default 'Student');
 
 create table if not exists courses(
       course_id int  auto_increment primary key,
-      course_name varchar(10) not null,
-      description varchar(50) not null,
+      course_name varchar(100) not null,
+      description varchar(300) not null,
       fees int, 
       start_date date,
       end_date  date,
@@ -20,20 +20,20 @@ create table if not exists courses(
 
 Create table if not exists students (
     reg_no int auto_increment primary key ,
-    name varchar(10) not null,
-    email varchar(50) not null,
+    name varchar(50) not null,
+    email varchar(150) not null,
     course_id int,
-    mobile_no varchar(10),
+    mobile_no varchar(50),
     profile_pic blob,
     foreign key (email) references users(email),
-    foreign key (course_id) references courses(course_id))
+    foreign key (course_id) references courses(course_id));
 
 
 create table if not exists videos(
    video_id int auto_increment primary key,
    course_id int,
-   title varchar(20) not null,
-   description varchar(100) not null,
-   youtube_url varchar(255) not null,
+   title varchar(150) not null,
+   description varchar(300) not null,
+   youtube_url varchar(300) not null,
    added_at datetime default current_timestamp ,
    foreign key (course_id) references courses(course_id) ON DELETE CASCADE);

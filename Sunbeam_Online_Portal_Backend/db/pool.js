@@ -8,5 +8,4 @@ const pool=mysql.createPool({
     password:'root',
     database:'db_Sunbeam_Online_Student_Portal'
 })
-
 module.exports=pool;
