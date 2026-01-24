@@ -7,7 +7,7 @@ Use db_Sunbeam_Online_Student_Portal;
 Create table if not exists users (
      email varchar(50) not null unique,
      password varchar(10),
-     role enum(“Student”,”Admin”) default 'Students');
+     role enum('Student','Admin') default 'Students');
 
 create table if not exists courses(
       course_id int  auto_increment primary key,
