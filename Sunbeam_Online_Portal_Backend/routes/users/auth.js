@@ -141,11 +141,11 @@ router.post('/signin', async (req, res) => {
     res.send(result.createResult(err));
   }
 });
-router.get('/profile', (req, res) => {
-  res.send(result.createResult(null, {
-    id: req.user.id,
-    email: req.user.email
-  }))
-})
+// router.get('/profile', (req, res) => {
+//   res.send(result.createResult(null, {
+//     id: req.user.id,
+//     email: req.user.email
+//   }))
+// })
 
 module.exports = router;

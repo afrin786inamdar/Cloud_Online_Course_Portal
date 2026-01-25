@@ -1,8 +1,6 @@
 //this is server.js file
 
 const express=require(`express`)
-
-
 const authRoutes=require(`./routes/users/auth`)
 const coursesrouter = require("./routes/admin/courses/all-course");
 const studentsRouter =require("./routes/students/all-student");
