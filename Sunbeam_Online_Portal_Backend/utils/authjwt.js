@@ -1,17 +1,24 @@
+// Public routes
+  // const openRoutes = ['/users/signup', '/users/signin','/courses/active']
+
+  // if (openRoutes.includes(req.originalUrl)) {
+  //   return next()
+  // }
+
+  // if (
+  // req.originalUrl.startsWith('/users/signup') ||
+  // req.originalUrl.startsWith('/users/signin') ||
+  // req.originalUrl.startsWith('/courses/active'))
+  // {
+  //     return next()
+  // }
+
 const jwt = require('jsonwebtoken')
 const result = require('./result')
 const config = require('./config')
 
+// ✅ Verify token
 function authUser(req, res, next) {
-
-  // Public routes
-  const openRoutes = ['/users/signup', '/users/signin']
-
-  if (openRoutes.includes(req.originalUrl)) {
-    return next()
-  }
-
-  // Get token from Authorization header
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
 
@@ -20,13 +27,11 @@ function authUser(req, res, next) {
   }
 
   try {
-    const payload = jwt.verify(token, config.SECRET)
+    const payload = jwt.verify(token, config.JWT_SECRET)
 
-    // Attach user info to request
     req.user = {
-      id: payload.id,
       email: payload.email,
-      role: payload.role
+      role: payload.role   // keep as it is, we will normalize in authorizeAdmin
     }
 
     next()
@@ -35,4 +40,15 @@ function authUser(req, res, next) {
   }
 }
 
-module.exports = { authUser }
+// ✅ Admin authorization (ADD THIS)
+function authorizeAdmin(req, res, next) {
+  const role = (req.user?.role || '').toLowerCase()
+
+  if (role !== 'admin') {
+    return res.send(result.createResult('Access denied'))
+  }
+
+  next()
+}
+
+module.exports = { authUser, authorizeAdmin }

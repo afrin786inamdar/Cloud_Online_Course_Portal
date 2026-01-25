@@ -1,8 +1,14 @@
 const express = require(`express`)
 const pool = require(`../../../db/pool`)
 const result = require(`../../../utils/result`)
+const { authUser } = require('../../../utils/authjwt')
+const { authorizeRole } = require('../../../utils/authorizeRole')
 
 const router  = express.Router();
+router.use(authUser)
+router.use(authorizeRole('admin'))
+
+
 
 router.get("/:course_id",(req,res) => {
   const { course_id } = req.params;
