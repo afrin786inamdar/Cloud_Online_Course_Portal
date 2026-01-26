@@ -1,6 +1,11 @@
+
 //1. Importing 
 const express = require(`express`);
 const pool = require(`../../../db/pool`);
+
+//jwt token
+const { authUser } = require('../../../utils/authjwt')
+const { authorizeRole } = require('../../../utils/authorizeRole')
 
 
 // 2.create router 
@@ -9,7 +14,47 @@ const router = express.Router();
 
 //4 . Routes - Courses 
 
+//get only active courses
+router.get("/active", (req, res) => {
+  const { startDate, endDate, type } = req.query;
+
+  let sql = `
+    SELECT *,
+    CASE
+        WHEN start_date > CURDATE() THEN 'UPCOMING'
+        ELSE 'ONGOING'
+    END AS course_status
+    FROM courses
+    WHERE end_date >= CURDATE()
+  `;
+
+  const values = [];
+
+  // date range filter
+  if (startDate && endDate) {
+    sql += ` AND start_date <= ? AND end_date >= ?`;
+    values.push(endDate, startDate);
+  }
+
+  // type filter (only active types allowed)
+  if (type === "upcoming") {
+    sql += ` AND start_date > CURDATE()`;
+  }
+  else if (type === "ongoing") {
+    sql += ` AND start_date <= CURDATE() AND end_date >= CURDATE()`;
+  }
+
+  pool.query(sql, values, (error, data) => {
+    res.send(result.createResult(error, data));
+  });
+});
+
+// 🔐 JWT + ADMIN ROLE starts here
+router.use(authUser)
+router.use(authorizeRole('admin'))
+
 //1.get all courses (get method)
+
 router.get("/", (req, res) => {
   const { startDate, endDate, type } = req.query;
   let sql = `
@@ -47,8 +92,8 @@ router.get("/", (req, res) => {
   });
 });
 
-
 //2.add courses (all course field should add / post method)
+
 router.post("/", (req, res) => {
   const { course_name, description, fees, start_date, end_date, video_expire_days } = req.body;
   const sql = `insert into courses (course_name, description,fees, start_date,end_date,video_expire_days) values (?,?,?,?,?,?)`
@@ -56,8 +101,6 @@ router.post("/", (req, res) => {
     res.send(result.createResult(error, data))
   })
 })
-
-
 //3.update courses (update by id put method )
 router.put("/:course_id", (req, res) => {
   const { course_id } = req.params;
@@ -116,8 +159,8 @@ router.put("/:course_id", (req, res) => {
   });
 });
 
-
 // 4. delete course (delete by id)
+
 router.delete("/:course_id", (req, res) => {
   const { course_id } = req.params;   // ✅ FIX
 

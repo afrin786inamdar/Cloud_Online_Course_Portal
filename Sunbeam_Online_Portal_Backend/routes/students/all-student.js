@@ -5,17 +5,22 @@ const express = require("express");
 const pool = require("../../db/pool");
 const result = require("../../utils/result");
 
+const { authUser } = require('../../utils/authjwt')
+const { authorizeRole } = require('../../utils/authorizeRole')
+
 const router = express.Router();
+
+router.use(authUser)
+router.use(authorizeRole('student'))
+
 
 // 2. Get courses for a student (by email only)
 // students router
 router.get("/", (req, res) => {
-  const { email } = req.query;
-
+  const { email } = req.user.email;
   if (!email) {
     return res.send(result.createResult("Email is required"));
   }
-
   const sql = `
     SELECT 
       c.course_id,
@@ -37,8 +42,7 @@ router.get("/", (req, res) => {
     WHERE s.email = ?
     GROUP BY c.course_id
   `;
-
-  pool.query(sql, [email], (error, data) => {
+pool.query(sql, [email], (error, data) => {
     res.send(result.createResult(error, data));
   });
 });
