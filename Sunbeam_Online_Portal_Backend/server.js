@@ -1,5 +1,4 @@
 //this is server.js file
-
 const express=require(`express`)
 
 const coursesrouter = require("./routes/admin/courses/all-course");

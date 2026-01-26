@@ -128,6 +128,5 @@ router.delete("/:course_id", (req, res) => {
   });
 });
 
-
 // 3.export router 
 module.exports = router;
