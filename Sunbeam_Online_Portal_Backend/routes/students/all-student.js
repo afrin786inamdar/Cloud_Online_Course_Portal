@@ -103,7 +103,42 @@ router.get('/my-course-with-videos', auth, (req, res) => {
   });
 });
 
+// Change Password (Student)
 
+router.put('/change-password', (req, res) => {
+  const email = req.user.email
+  const { oldPassword, newPassword } = req.body
+
+  if (!oldPassword || !newPassword) {
+    return res.send(result.createResult('oldPassword and newPassword are required'))
+  }
+
+  // hash both (same as signin)
+  const oldHash = cryptojs.SHA256(oldPassword).toString()
+  const newHash = cryptojs.SHA256(newPassword).toString()
+
+  // 1) verify old password
+  const checkSql = `SELECT password FROM users WHERE email=?`
+  pool.query(checkSql, [email], (err, rows) => {
+    if (err) return res.send(result.createResult(err))
+
+    if (rows.length === 0) {
+      return res.send(result.createResult('User not found'))
+    }
+
+    if (rows[0].password !== oldHash) {
+      return res.send(result.createResult('Old password is incorrect'))
+    }
+
+    // 2) update to new password
+    const updateSql = `UPDATE users SET password=? WHERE email=?`
+    pool.query(updateSql, [newHash, email], (err2, data) => {
+      if (err2) return res.send(result.createResult(err2))
+
+      return res.send(result.createResult(null, { message: 'Password changed successfully' }))
+    })
+  })
+})
 
 
 module.exports = router;

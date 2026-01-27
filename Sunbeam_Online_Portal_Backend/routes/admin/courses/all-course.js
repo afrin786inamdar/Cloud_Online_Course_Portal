@@ -171,5 +171,29 @@ router.delete("/:course_id", (req, res) => {
   });
 });
 
+
+// GET enrolled students by courseId (RESTful)
+router.get("/enrolled-students/:courseId", (req, res) => {
+  const { courseId } = req.params;  // get from URL
+
+  if (!courseId) {
+    return res.send(result.createResult("courseId is required"));
+  }
+
+  const sql = `
+    SELECT reg_no, name, email, mobile_no
+    FROM students
+    WHERE course_id = ?
+  `;
+
+  pool.query(sql, [courseId], (error, data) => {
+    res.send(result.createResult(error, {
+      courseId: courseId,
+      totalStudents: data.length,
+      enrolledStudents: data
+    }));
+  });
+});
+
 // 3.export router 
 module.exports = router;
