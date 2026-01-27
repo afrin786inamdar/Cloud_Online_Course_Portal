@@ -4,6 +4,7 @@
 const express = require("express");
 const pool = require("../../db/pool");
 const result = require("../../utils/result");
+const cryptojs = require('crypto-js')
 
 const { authUser } = require('../../utils/authjwt')
 const { authorizeRole } = require('../../utils/authorizeRole')
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.use(authUser)
 router.use(authorizeRole('student'))
+
 
 
 // 2. Get courses for a student (by email only)
@@ -46,9 +48,6 @@ pool.query(sql, [email], (error, data) => {
     res.send(result.createResult(error, data));
   });
 });
-
-
-
 
 router.get('/my-course-with-videos', auth, (req, res) => {
   const { email } = req.user; 
@@ -139,6 +138,4 @@ router.put('/change-password', (req, res) => {
     })
   })
 })
-
-
 module.exports = router;
