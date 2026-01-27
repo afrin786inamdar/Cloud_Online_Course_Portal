@@ -1,23 +1,8 @@
-// Public routes
-  // const openRoutes = ['/users/signup', '/users/signin','/courses/active']
-
-  // if (openRoutes.includes(req.originalUrl)) {
-  //   return next()
-  // }
-
-  // if (
-  // req.originalUrl.startsWith('/users/signup') ||
-  // req.originalUrl.startsWith('/users/signin') ||
-  // req.originalUrl.startsWith('/courses/active'))
-  // {
-  //     return next()
-  // }
-
 const jwt = require('jsonwebtoken')
 const result = require('./result')
 const config = require('./config')
 
-// ✅ Verify token
+//  Verify token for user side
 function authUser(req, res, next) {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -40,7 +25,8 @@ function authUser(req, res, next) {
   }
 }
 
-// ✅ Admin authorization (ADD THIS)
+//  Admin authorization 
+
 function authorizeAdmin(req, res, next) {
   const role = (req.user?.role || '').toLowerCase()
 

@@ -1,17 +1,3 @@
-// const result = require('./result')
-
-// function authorizeRole(role) {
-//   return (req, res, next) => {
-//     if (req.user.role !== role) {
-//       return res.send(result.createResult('Access denied'))
-//     }
-//     next()
-//   }
-// }
-
-// module.exports = { authorizeRole }
-
-
 const result = require('./result')
 
 function authorizeRole(requiredRole) {

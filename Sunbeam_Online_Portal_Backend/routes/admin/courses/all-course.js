@@ -49,7 +49,7 @@ router.get("/active", (req, res) => {
   });
 });
 
-// 🔐 JWT + ADMIN ROLE starts here
+//  JWT + ADMIN ROLE starts here
 router.use(authUser)
 router.use(authorizeRole('admin'))
 
@@ -162,7 +162,7 @@ router.put("/:course_id", (req, res) => {
 // 4. delete course (delete by id)
 
 router.delete("/:course_id", (req, res) => {
-  const { course_id } = req.params;   // ✅ FIX
+  const { course_id } = req.params;   
 
   const sql = `DELETE FROM courses WHERE course_id = ?`;
 
