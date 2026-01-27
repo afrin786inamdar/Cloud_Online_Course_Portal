@@ -48,4 +48,94 @@ pool.query(sql, [email], (error, data) => {
     res.send(result.createResult(error, data));
   });
 });
+
+router.get('/my-course-with-videos', auth, (req, res) => {
+  const { email } = req.user; 
+
+  const sql = `
+    SELECT 
+      c.course_id, 
+      c.course_name, 
+      c.description, 
+      c.fees,
+      v.video_id, 
+      v.title, 
+      v.youtube_url
+    FROM students s
+    JOIN courses c ON s.course_id = c.course_id
+    LEFT JOIN videos v ON c.course_id = v.course_id
+    WHERE s.email = ?;
+  `;
+
+  pool.query(sql, [email], (error, data) => {
+    if (error) {
+      res.send(result.createResult(error, null));
+    } else if (data.length === 0) {
+      res.send(result.createResult(null, 'No enrolled courses found or no videos added yet.'));
+    } else {
+      
+      const courseMap = {};
+
+      data.forEach(row => {
+        if (!courseMap[row.course_id]) {
+          courseMap[row.course_id] = {
+            course_id: row.course_id,
+            course_name: row.course_name,
+            description: row.description,
+            fees: row.fees,
+            videos: []
+          };
+        }
+
+        if (row.video_id) {
+          courseMap[row.course_id].videos.push({
+            video_id: row.video_id,
+            title: row.title,
+            youtube_url: row.youtube_url
+          });
+        }
+      });
+
+      const response = Object.values(courseMap);
+      res.send(result.createResult(null, response));
+    }
+  });
+});
+
+// Change Password (Student)
+
+router.put('/change-password', (req, res) => {
+  const email = req.user.email
+  const { oldPassword, newPassword } = req.body
+
+  if (!oldPassword || !newPassword) {
+    return res.send(result.createResult('oldPassword and newPassword are required'))
+  }
+
+  // hash both (same as signin)
+  const oldHash = cryptojs.SHA256(oldPassword).toString()
+  const newHash = cryptojs.SHA256(newPassword).toString()
+
+  // 1) verify old password
+  const checkSql = `SELECT password FROM users WHERE email=?`
+  pool.query(checkSql, [email], (err, rows) => {
+    if (err) return res.send(result.createResult(err))
+
+    if (rows.length === 0) {
+      return res.send(result.createResult('User not found'))
+    }
+
+    if (rows[0].password !== oldHash) {
+      return res.send(result.createResult('Old password is incorrect'))
+    }
+
+    // 2) update to new password
+    const updateSql = `UPDATE users SET password=? WHERE email=?`
+    pool.query(updateSql, [newHash, email], (err2, data) => {
+      if (err2) return res.send(result.createResult(err2))
+
+      return res.send(result.createResult(null, { message: 'Password changed successfully' }))
+    })
+  })
+})
 module.exports = router;
