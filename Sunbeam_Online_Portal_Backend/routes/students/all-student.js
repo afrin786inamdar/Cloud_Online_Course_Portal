@@ -47,4 +47,63 @@ pool.query(sql, [email], (error, data) => {
   });
 });
 
+
+
+
+router.get('/my-course-with-videos', auth, (req, res) => {
+  const { email } = req.user; 
+
+  const sql = `
+    SELECT 
+      c.course_id, 
+      c.course_name, 
+      c.description, 
+      c.fees,
+      v.video_id, 
+      v.title, 
+      v.youtube_url
+    FROM students s
+    JOIN courses c ON s.course_id = c.course_id
+    LEFT JOIN videos v ON c.course_id = v.course_id
+    WHERE s.email = ?;
+  `;
+
+  pool.query(sql, [email], (error, data) => {
+    if (error) {
+      res.send(result.createResult(error, null));
+    } else if (data.length === 0) {
+      res.send(result.createResult(null, 'No enrolled courses found or no videos added yet.'));
+    } else {
+      
+      const courseMap = {};
+
+      data.forEach(row => {
+        if (!courseMap[row.course_id]) {
+          courseMap[row.course_id] = {
+            course_id: row.course_id,
+            course_name: row.course_name,
+            description: row.description,
+            fees: row.fees,
+            videos: []
+          };
+        }
+
+        if (row.video_id) {
+          courseMap[row.course_id].videos.push({
+            video_id: row.video_id,
+            title: row.title,
+            youtube_url: row.youtube_url
+          });
+        }
+      });
+
+      const response = Object.values(courseMap);
+      res.send(result.createResult(null, response));
+    }
+  });
+});
+
+
+
+
 module.exports = router;
