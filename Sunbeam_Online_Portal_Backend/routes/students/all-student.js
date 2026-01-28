@@ -19,7 +19,10 @@ router.use(authorizeRole('student'))
 // 2. Get courses for a student (by email only)
 // students router
 router.get("/", (req, res) => {
-  const { email } = req.user.email;
+
+  console.log(req.user); //just for debugging purpose
+
+  const email  = req.user.email;
   if (!email) {
     return res.send(result.createResult("Email is required"));
   }
@@ -49,8 +52,8 @@ pool.query(sql, [email], (error, data) => {
   });
 });
 
-router.get('/my-course-with-videos', auth, (req, res) => {
-  const { email } = req.user; 
+router.get('/my-course-with-videos',(req, res) => {
+  const  email  = req.user.email; 
 
   const sql = `
     SELECT 
