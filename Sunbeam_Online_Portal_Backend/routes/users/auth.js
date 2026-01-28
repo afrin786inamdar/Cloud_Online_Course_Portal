@@ -19,11 +19,47 @@ const query = (sql, params) => {
   });
 };
 
+// router.post('/signup', async (req, res) => {
+//   try {
+//     const { name, email, mobile_no, course_id } = req.body;
+
+//     // Validate input
+//     if (!name || !email || !mobile_no || !course_id) {
+//       return res.send(result.createResult('All fields are required'));
+//     }
+
+//     const defaultPassword = 'sunbeam';
+//     const hashPassword = cryptojs.SHA256(defaultPassword).toString();
+
+//     // 1️ Check if email exists
+//     const checkSql = `SELECT email FROM users WHERE email = ?`;
+//     const existing = await query(checkSql, [email]);
+
+//     if (existing.length > 0) {
+//       return res.send(result.createResult(null, 'Email already registered'));
+//     }
+
+//     // 2️ Insert into users table
+//     const userSql = `INSERT INTO users(email, password, role) VALUES (?, ?, ?)`;
+//     await query(userSql, [email, hashPassword, 'Student']);
+
+//     // 3️ Insert into students table
+//     const studentSql = `INSERT INTO students(name, email, mobile_no, course_id) VALUES (?, ?, ?, ?)`;
+//     await query(studentSql, [name, email, mobile_no, course_id]);
+
+//     // 4️ Send response once
+//     res.send(result.createResult(null, "Student registered successfully. Default password is 'sunbeam'"));
+
+//   } catch (err) {
+//     console.error(err);
+//     res.send(result.createResult(err));
+//   }
+// });
+
 router.post('/signup', async (req, res) => {
   try {
     const { name, email, mobile_no, course_id } = req.body;
 
-    // Validate input
     if (!name || !email || !mobile_no || !course_id) {
       return res.send(result.createResult('All fields are required'));
     }
@@ -31,30 +67,45 @@ router.post('/signup', async (req, res) => {
     const defaultPassword = 'sunbeam';
     const hashPassword = cryptojs.SHA256(defaultPassword).toString();
 
-    // 1️ Check if email exists
-    const checkSql = `SELECT email FROM users WHERE email = ?`;
-    const existing = await query(checkSql, [email]);
+    // check user exists
+    const checkUser = await query(
+      "SELECT email FROM users WHERE email=?",
+      [email]
+    );
 
-    if (existing.length > 0) {
-      return res.send(result.createResult(null, 'Email already registered'));
+    // If first time signup → create account
+    if (checkUser.length === 0) {
+
+      await query(
+        "INSERT INTO users(email,password,role) VALUES (?,?,?)",
+        [email, hashPassword, 'student']
+      );
     }
 
-    // 2️ Insert into users table
-    const userSql = `INSERT INTO users(email, password, role) VALUES (?, ?, ?)`;
-    await query(userSql, [email, hashPassword, 'Student']);
+    // check course already enrolled
+    const checkEnroll = await query(
+      "SELECT reg_no FROM students WHERE email=? AND course_id=?",
+      [email, course_id]
+    );
 
-    // 3️ Insert into students table
-    const studentSql = `INSERT INTO students(name, email, mobile_no, course_id) VALUES (?, ?, ?, ?)`;
-    await query(studentSql, [name, email, mobile_no, course_id]);
+    if (checkEnroll.length > 0) {
+      return res.send(result.createResult("Already enrolled in this course"));
+    }
 
-    // 4️ Send response once
-    res.send(result.createResult(null, "Student registered successfully. Default password is 'sunbeam'"));
+    // enroll into course
+    await query(
+      "INSERT INTO students(name,email,mobile_no,course_id) VALUES (?,?,?,?)",
+      [name, email, mobile_no, course_id]
+    );
+
+    res.send(result.createResult(null, "Course enrolled successfully"));
 
   } catch (err) {
     console.error(err);
     res.send(result.createResult(err));
   }
 });
+
 
 // =======================
 // SIGN-IN / LOGIN ROUTE
