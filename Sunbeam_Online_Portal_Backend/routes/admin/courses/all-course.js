@@ -14,16 +14,27 @@ const router = express.Router();
 
 //4 . Routes - Courses 
 
-//get only active courses
+// get only active courses
 router.get("/active", (req, res) => {
   const { startDate, endDate, type } = req.query;
 
   let sql = `
-    SELECT *,
-    CASE
+    SELECT
+      course_id,
+      course_name,
+      description,
+      fees,
+
+      DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+      DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+
+      video_expire_days,
+
+      CASE
         WHEN start_date > CURDATE() THEN 'UPCOMING'
         ELSE 'ONGOING'
-    END AS course_status
+      END AS course_status
+
     FROM courses
     WHERE end_date >= CURDATE()
   `;
@@ -39,15 +50,18 @@ router.get("/active", (req, res) => {
   // type filter (only active types allowed)
   if (type === "upcoming") {
     sql += ` AND start_date > CURDATE()`;
-  }
-  else if (type === "ongoing") {
+  } else if (type === "ongoing") {
     sql += ` AND start_date <= CURDATE() AND end_date >= CURDATE()`;
   }
 
   pool.query(sql, values, (error, data) => {
-    res.send(result.createResult(error, data));
+    if (error) {
+      return res.send(result.createResult(error));
+    }
+    res.send(result.createResult(null, data));
   });
 });
+
 
 //  JWT + ADMIN ROLE starts here
 router.use(authUser)
@@ -57,18 +71,30 @@ router.use(authorizeRole('admin'))
 
 router.get("/", (req, res) => {
   const { startDate, endDate, type } = req.query;
+
   let sql = `
-      SELECT *,
+    SELECT 
+      course_id,
+      course_name,
+      description,
+      fees,
+
+      DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+      DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+
+      video_expire_days,
+
       CASE
-          WHEN end_date < CURDATE() THEN 'COMPLETED'
-          WHEN start_date > CURDATE() THEN 'UPCOMING'
-          ELSE 'ONGOING'
+        WHEN end_date < CURDATE() THEN 'COMPLETED'
+        WHEN start_date > CURDATE() THEN 'UPCOMING'
+        ELSE 'ONGOING'
       END AS course_status
-      FROM courses
-      WHERE 1 = 1`;
+
+    FROM courses
+    WHERE 1 = 1
+  `;
 
   const values = [];
-
 
   // Date filter
   if (startDate && endDate) {
@@ -79,18 +105,22 @@ router.get("/", (req, res) => {
   // Course type filter
   if (type === 'completed') {
     sql += ` AND end_date < CURDATE()`;
-  }
+  } 
   else if (type === 'upcoming') {
     sql += ` AND start_date > CURDATE()`;
-  }
+  } 
   else if (type === 'ongoing') {
     sql += ` AND start_date <= CURDATE() AND end_date >= CURDATE()`;
   }
 
   pool.query(sql, values, (error, data) => {
-    res.send(result.createResult(error, data));
+    if (error) {
+      return res.send(result.createResult(error));
+    }
+    res.send(result.createResult(null, data));
   });
 });
+
 
 //2.add courses (all course field should add / post method)
 
