@@ -106,10 +106,16 @@ router.post('/signin', async (req, res) => {
     const token = jwt.sign(payload, config.JWT_SECRET, { expiresIn: '1h' });
 
     // 5️ Success response
+    // return res.send(result.createResult(null, {
+    //   message: `Login successful. Welcome, ${user.email}`,
+    //   token
+    // }));
+
     return res.send(result.createResult(null, {
-      message: `Login successful. Welcome, ${user.email}`,
-      token
-    }));
+  token: token,
+  role: user.role,
+  email: user.email
+}));
 
   } catch (err) {
     console.error(err);
