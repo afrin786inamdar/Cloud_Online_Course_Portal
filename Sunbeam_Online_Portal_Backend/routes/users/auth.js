@@ -103,7 +103,7 @@ router.post('/signin', async (req, res) => {
       role: user.role
     };
 
-    const token = jwt.sign(payload, config.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(payload, config.JWT_SECRET);
 
     // 5️ Success response
     // return res.send(result.createResult(null, {
