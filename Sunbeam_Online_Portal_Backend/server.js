@@ -5,6 +5,8 @@ const authRoutes=require(`./routes/users/auth`)
 const coursesrouter = require("./routes/admin/courses/all-course");
 const studentsRouter =require("./routes/students/all-student");
 const videoRouter = require(`./routes/admin/videos/CRUD`)
+
+const adminStudentsRouter = require("./routes/students/getStudent");
 const app=express()
 app.use(cors());               // ENABLE CORS
 app.use(express.json())
@@ -13,6 +15,7 @@ app.use("/auth",authRoutes);
 app.use("/courses",coursesrouter)
 app.use("/students", studentsRouter);
 app.use("/videos",videoRouter)
+app.use("/admin/students", adminStudentsRouter)
 
 app.listen(`3000`,`localhost`,()=>{
       console.log(`server is started on port 3000`)

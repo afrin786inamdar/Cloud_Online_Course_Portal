@@ -15,7 +15,7 @@ export async function getMyCourses(token) {
 
 // 2. Admin - Get Student List
 export async function getStudentList(token) {
-  const URL = Config.BASE_URL + "/students";
+  const URL = Config.BASE_URL + "/admin/students";
 
   const response = await axios.get(URL, {
     headers: { Authorization: "Bearer " + token },
