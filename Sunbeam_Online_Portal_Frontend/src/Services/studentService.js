@@ -45,3 +45,18 @@ export async function deleteStudent(studentId, token) {
 
   return response.data;
 }
+
+export async function changeStudentPassword(oldPassword, newPassword, token) {
+
+  const URL = Config.BASE_URL + "/students/change-password";
+
+  const response = await axios.put(
+    URL,
+    { oldPassword, newPassword },
+    {
+      headers: { Authorization: "Bearer " + token },
+    }
+  );
+
+  return response.data;
+}

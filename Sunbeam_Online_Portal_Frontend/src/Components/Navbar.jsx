@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 function Navbar() {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   const readUser = () => {
     try {
@@ -13,14 +14,11 @@ function Navbar() {
   };
 
   useEffect(() => {
-    // set initially
     setUser(readUser());
 
-    // listen for changes (works between tabs)
     const onStorage = () => setUser(readUser());
     window.addEventListener("storage", onStorage);
 
-    // custom event for same tab (important)
     const onAuthChange = () => setUser(readUser());
     window.addEventListener("authChanged", onAuthChange);
 
@@ -31,11 +29,21 @@ function Navbar() {
   }, []);
 
   const role = user?.role?.toLowerCase();
+  const email = user?.email || "";
+
+  const avatarText = useMemo(() => {
+    if (!email) return "?";
+    return email[0].toUpperCase();
+  }, [email]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    window.dispatchEvent(new Event("authChanged")); //  update navbar instantly
-    window.location.href = "/login";
+    window.dispatchEvent(new Event("authChanged"));
+    navigate("/login");
+  };
+
+  const goToChangePassword = () => {
+    navigate("/student/change-password"); // only student allowed
   };
 
   return (
@@ -58,15 +66,15 @@ function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="sunbeamNavbar">
+          {/* LEFT MENU */}
           <div className="navbar-nav">
             <Link className="nav-link" to="/">Home</Link>
             <Link className="nav-link" to="/about">About Sunbeam</Link>
 
             {role === "student" && (
-              <>
-                <Link className="nav-link" to="/student/courses">My Courses</Link>
-                <Link className="nav-link" to="/student/profile">Profile</Link>
-              </>
+              <Link className="nav-link" to="/student/courses">
+                My Courses
+              </Link>
             )}
 
             {role === "admin" && (
@@ -86,7 +94,9 @@ function Navbar() {
             )}
           </div>
 
-          <div className="navbar-nav ms-auto">
+          {/* RIGHT PROFILE SECTION */}
+          <div className="navbar-nav ms-auto align-items-center">
+
             {!user && (
               <Link className="nav-link" to="/login">
                 Login
@@ -94,10 +104,67 @@ function Navbar() {
             )}
 
             {user && (
-              <button className="btn btn-outline-light" onClick={handleLogout}>
-                Logout
-              </button>
+              <div className="nav-item dropdown">
+                {/* Profile Icon */}
+                <button
+                  className="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
+                  data-bs-toggle="dropdown"
+                  style={{ borderRadius: 999 }}
+                >
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {avatarText}
+                  </span>
+                  <span className="d-none d-md-inline">Profile</span>
+                </button>
+
+                {/* DROPDOWN */}
+                <ul className="dropdown-menu dropdown-menu-end p-3" style={{ minWidth: 260 }}>
+
+                  {/* USER INFO */}
+                  <li className="mb-2">
+                    <div className="fw-bold">{email}</div>
+                    <div className="text-muted small">Role: {role}</div>
+                  </li>
+
+                  <li><hr className="dropdown-divider" /></li>
+
+                  {/* STUDENT ONLY CHANGE PASSWORD */}
+                  {role === "student" && (
+                    <li>
+                      <button
+                        className="btn btn-primary w-100 mb-2"
+                        onClick={goToChangePassword}
+                      >
+                        Change Password
+                      </button>
+                    </li>
+                  )}
+
+                  {/* LOGOUT (BOTH) */}
+                  <li>
+                    <button
+                      className="btn btn-outline-danger w-100"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </li>
+
+                </ul>
+              </div>
             )}
+
           </div>
         </div>
       </div>
