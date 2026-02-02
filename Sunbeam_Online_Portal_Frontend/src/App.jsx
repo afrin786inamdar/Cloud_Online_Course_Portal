@@ -7,7 +7,7 @@ import About from "./Pages/About.jsx";
 import Login from "./Pages/Login.jsx";
 import Register from "./Pages/Register.jsx";
 import StudentCourses from "./Pages/Student/StudentCourses.jsx";
-
+import StudentVideos from "./Pages/Student/StudentVideos.jsx";
 import ChangePassword from "./Pages/Student/ChangePassword";
 
 import ManageCourses from "./Pages/Admin/ManageCourses.jsx";
@@ -34,7 +34,7 @@ function App() {
         <Route path="/admin/manage-courses" element={<ManageCourses />} />
         <Route path="/admin/manage-videos" element={<ManageVideos />} />
         <Route path="/admin/students" element={<StudentList />} />
-
+        <Route path="/student/videos/:courseId" element={<StudentVideos />} />
         {/* OPTIONAL */}
         <Route path="*" element={<h2>Page Not Found</h2>} />
       </Routes>
