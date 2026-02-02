@@ -1,12 +1,11 @@
-// src/Pages/About.jsx
 function About() {
   return (
     <div className="container my-4">
+
       {/* HERO BANNER */}
       <div
-        className="p-5 text-center text-white rounded"
+        className="p-5 text-center text-white rounded bg-primary"
         style={{
-          background: "#14b8d4",
           minHeight: 240,
           display: "flex",
           alignItems: "center",
@@ -23,10 +22,7 @@ function About() {
 
       {/* OUR PHILOSOPHY */}
       <div className="card shadow-sm my-4">
-        <div
-          className="card-header fw-bold text-white"
-          style={{ background: "#14b8d4" }}
-        >
+        <div className="card-header fw-bold text-white bg-primary">
           💡 Our Philosophy
         </div>
 
@@ -43,10 +39,13 @@ function About() {
 
       {/* TWO CARDS */}
       <div className="row g-4 pb-5">
+
         {/* OUR EXPERTISE */}
         <div className="col-md-6">
           <div className="card shadow-sm h-100">
-            <div className="card-header fw-bold text-info">⭐ Our Expertise</div>
+            <div className="card-header fw-bold text-primary">
+              ⭐ Our Expertise
+            </div>
             <div className="card-body">
               <p className="mb-0" style={{ lineHeight: 1.7 }}>
                 In this scenario, technical &amp; personal skills which provide
@@ -64,7 +63,9 @@ function About() {
         {/* OUR SUCCESS */}
         <div className="col-md-6">
           <div className="card shadow-sm h-100">
-            <div className="card-header fw-bold text-info">🏆 Our Success</div>
+            <div className="card-header fw-bold text-primary">
+              🏆 Our Success
+            </div>
             <div className="card-body">
               <p className="mb-0" style={{ lineHeight: 1.7 }}>
                 Sunbeam&apos;s proven track record in bringing about effective
@@ -74,12 +75,14 @@ function About() {
                 comprehensively researched, innovative training methodologies,
                 deployment of technology and an emphasis on transformational
                 &amp; industry-relevant programs offering value-added services to
-                its clients
+                its clients.
               </p>
             </div>
           </div>
         </div>
+
       </div>
+
     </div>
   );
 }
