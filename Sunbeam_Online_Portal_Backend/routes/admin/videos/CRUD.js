@@ -94,7 +94,7 @@ router.get(
   checkEnrollment,
   async (req, res) => {
     const { courseId } = req.params;
-    const { courseId } = req.params;
+    
 
     try {
       const videos = await query(
@@ -114,7 +114,7 @@ router.get(
     }
   }
 );
-);
+
 
 /* =========================================
    ADMIN → ADD VIDEO
