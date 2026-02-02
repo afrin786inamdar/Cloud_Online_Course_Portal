@@ -32,4 +32,22 @@ router.get("/", (req, res) => {
 
 });
 
+router.get("/:courseId", (req, res) => {
+  const { courseId } = req.params;
+
+  const sql = `
+    SELECT 
+      s.reg_no,
+      s.name,
+      s.email,
+      s.mobile_no
+    FROM students s
+    WHERE s.course_id = ?
+  `;
+
+  pool.query(sql, [courseId], (error, data) => {
+    res.send(result.createResult(error, data));
+  });
+});
+
 module.exports = router;

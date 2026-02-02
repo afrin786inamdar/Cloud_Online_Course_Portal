@@ -4,6 +4,8 @@ import { Container, Row, Col, Card, Button } from "react-bootstrap";
 
 import { getActiveCourses } from "../Services/courseService";
 import { getMyCourses } from "../Services/studentService";
+import axios from "axios";
+import Config from "../Services/Config";
 
 import heroImg from "../assets/hero.jpg";
 
@@ -13,15 +15,21 @@ function Home() {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const isAdmin = user?.role === "admin";
 
   // ================= LOAD DATA =================
   useEffect(() => {
-    loadCourses();
-    if (user?.token) {
-      loadMyCourses();
+    if (isAdmin) {
+      loadRegisteredCourses();
+    } else {
+      loadCourses();
+      if (user?.token) {
+        loadMyCourses();
+      }
     }
   }, []);
 
+  // ---------- STUDENT / GUEST ----------
   const loadCourses = async () => {
     try {
       const result = await getActiveCourses();
@@ -37,7 +45,6 @@ function Home() {
     try {
       const result = await getMyCourses(user.token);
       if (result.status === "success") {
-        // store only course_id for comparison
         setEnrolledIds(result.data.map(c => c.course_id));
       }
     } catch (err) {
@@ -45,11 +52,31 @@ function Home() {
     }
   };
 
+  // ---------- ADMIN ----------
+  const loadRegisteredCourses = async () => {
+    try {
+      const res = await axios.get(
+        `${Config.BASE_URL}/admin/courses`,
+        {
+          headers: {
+            Authorization: "Bearer " + user.token
+          }
+        }
+      );
+
+      if (res.data.status === "success") {
+        setCourses(res.data.data);
+      }
+    } catch (err) {
+      console.error("Error loading admin courses:", err);
+    }
+  };
+
   // ================= UI =================
   return (
     <div style={{ backgroundColor: "#f5f9fd", minHeight: "100vh" }}>
 
-      {/* ================= HERO SECTION ================= */}
+      {/* ================= HERO SECTION (UNCHANGED) ================= */}
       <div style={{ backgroundColor: "#e3f2fd" }} className="py-5">
         <Container>
           <Row className="align-items-center">
@@ -68,7 +95,8 @@ function Home() {
                   size="lg"
                   className="me-3"
                   onClick={() =>
-                    document.getElementById("courses")
+                    document
+                      .getElementById("courses")
                       .scrollIntoView({ behavior: "smooth" })
                   }
                 >
@@ -99,15 +127,15 @@ function Home() {
         </Container>
       </div>
 
-      {/* ================= AVAILABLE COURSES ================= */}
+      {/* ================= COURSES SECTION ================= */}
       <Container className="py-5" id="courses">
         <h2 className="text-center mb-4 text-primary">
-          Available Courses
+          {isAdmin ? "Registered Courses" : "Available Courses"}
         </h2>
 
         <Row>
           {courses.length === 0 && (
-            <p className="text-center">No active courses available</p>
+            <p className="text-center">No courses available</p>
           )}
 
           {courses.map(course => {
@@ -127,53 +155,74 @@ function Home() {
                     <p><b>Start:</b> {course.start_date}</p>
                     <p><b>End:</b> {course.end_date}</p>
 
-                    <div className="d-flex gap-2">
-                      {/* NOT ENROLLED */}
-                      {!isEnrolled && (
+                    {/* ================= ADMIN BUTTON ================= */}
+                    {isAdmin && (
+                      <>
+                        <p className="text-success">
+                          <b>Registered Students:</b> {course.student_count}
+                        </p>
+
                         <Button
                           variant="info"
-                          className="text-white"
-                          onClick={() => {
-                            localStorage.setItem(
-                              "selectedCourse",
-                              JSON.stringify({
-                                course_id: course.course_id,
-                                course_name: course.course_name
-                              })
-                            );
-                            navigate("/register");
-                          }}
+                          className="w-100"
+                          onClick={() =>
+                            navigate(`/admin/students/${course.course_id}`)
+                          }
                         >
-                          Register
+                          View Student List
                         </Button>
-                      )}
+                      </>
+                    )}
 
-                      {/* ENROLLED */}
-                      {isEnrolled && (
-                        <Button
-                          variant="outline-info"
-                          onClick={() => navigate("/student/courses")}
-                        >
-                          View Videos
-                        </Button>
-                      )}
+                    {/* ================= STUDENT / GUEST BUTTONS ================= */}
+                    {!isAdmin && (
+                      <>
+                        <div className="d-flex gap-2">
+                          {!user && (
+                            <Button
+                              variant="outline-info"
+                              onClick={() => navigate("/login")}
+                            >
+                              Login
+                            </Button>
+                          )}
 
-                      {/* NOT LOGGED IN */}
-                      {!user && (
-                        <Button
-                          variant="outline-info"
-                          onClick={() => navigate("/login")}
-                        >
-                          Login
-                        </Button>
-                      )}
-                    </div>
+                          {user && !isEnrolled && (
+                            <Button
+                              variant="info"
+                              className="text-white"
+                              onClick={() => {
+                                localStorage.setItem(
+                                  "selectedCourse",
+                                  JSON.stringify({
+                                    course_id: course.course_id,
+                                    course_name: course.course_name
+                                  })
+                                );
+                                navigate("/register");
+                              }}
+                            >
+                              Register
+                            </Button>
+                          )}
 
-                    <div className="mt-2 text-muted small">
-                      {isEnrolled
-                        ? "You are enrolled in this course"
-                        : "Register to unlock video lectures"}
-                    </div>
+                          {isEnrolled && (
+                            <Button
+                              variant="outline-info"
+                              onClick={() => navigate("/student/courses")}
+                            >
+                              View Videos
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="mt-2 text-muted small">
+                          {isEnrolled
+                            ? "You are enrolled in this course"
+                            : "Register to unlock video lectures"}
+                        </div>
+                      </>
+                    )}
                   </Card.Body>
                 </Card>
               </Col>

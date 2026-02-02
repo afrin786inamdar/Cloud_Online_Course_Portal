@@ -1,7 +1,7 @@
 const express = require('express')
 const pool = require('../../../db/pool')
 const result = require('../../../utils/result')
-
+const { toEmbedUrl } = require('../../../utils/youtube');
 const { authUser } = require('../../../utils/authjwt')
 const { authorizeRole } = require('../../../utils/authorizeRole')
 const { checkEnrollment } = require('../../../middleware/checkEnrollment')
@@ -83,16 +83,26 @@ router.get(
   authorizeRole('student'),
   checkEnrollment,
   async (req, res) => {
-    const { courseId } = req.params
+    const { courseId } = req.params;
 
-    const videos = await query(
-      'SELECT * FROM videos WHERE course_id=?',
-      [courseId]
-    )
+    try {
+      const videos = await query(
+        'SELECT * FROM videos WHERE course_id=?',
+        [courseId]
+      );
 
-    res.send(result.createResult(null, videos))
+      // ✅ Convert ALL URLs before sending to frontend
+      const fixedVideos = videos.map(v => ({
+        ...v,
+        youtube_url: toEmbedUrl(v.youtube_url)
+      }));
+
+      res.send(result.createResult(null, fixedVideos));
+    } catch (err) {
+      res.send(result.createResult(err));
+    }
   }
-)
+);
 
 /* =========================================
    ADMIN → ADD VIDEO
@@ -102,20 +112,28 @@ router.post(
   authUser,
   authorizeRole('admin'),
   (req, res) => {
-    const { course_id, title, description, youtube_url } = req.body
+    const { course_id, title, description, youtube_url } = req.body;
 
-    const sql =
-      'INSERT INTO videos(course_id,title,description,youtube_url) VALUES (?,?,?,?)'
+    if (!course_id || !title || !description || !youtube_url) {
+      return res.send(result.createResult('All fields required'));
+    }
+
+    const embedUrl = toEmbedUrl(youtube_url); // ✅ normalize here
+
+    const sql = `
+      INSERT INTO videos(course_id,title,description,youtube_url)
+      VALUES (?,?,?,?)
+    `;
 
     pool.query(
       sql,
-      [course_id, title, description, youtube_url],
+      [course_id, title, description, embedUrl],
       (error, data) => {
-        res.send(result.createResult(error, data))
+        res.send(result.createResult(error, data));
       }
-    )
+    );
   }
-)
+);
 
 /* =========================================
    ADMIN → UPDATE VIDEO
@@ -144,9 +162,10 @@ router.put(
       values.push(description)
     }
     if (youtube_url) {
-      fields.push('youtube_url=?')
-      values.push(youtube_url)
-    }
+  fields.push('youtube_url=?');
+  values.push(toEmbedUrl(youtube_url));
+}
+
 
     if (fields.length === 0) {
       return res.send(result.createResult('No fields to update'))
