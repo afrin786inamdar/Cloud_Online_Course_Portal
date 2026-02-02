@@ -8,6 +8,7 @@ import Login from "./Pages/Login.jsx";
 import Register from "./Pages/Register.jsx";
 import StudentCourses from "./Pages/Student/StudentCourses.jsx";
 
+import ChangePassword from "./Pages/Student/ChangePassword";
 
 import ManageCourses from "./Pages/Admin/ManageCourses.jsx";
 import ManageVideos from "./Pages/Admin/ManageVideos.jsx";
@@ -27,6 +28,7 @@ function App() {
 
         {/* STUDENT */}
         <Route path="/student/courses" element={<StudentCourses />} />
+        <Route path="/student/change-password" element={<ChangePassword />} />
 
         {/* ADMIN */}
         <Route path="/admin/manage-courses" element={<ManageCourses />} />
