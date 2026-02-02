@@ -86,8 +86,15 @@ function ManageCourses() {
 
       <div className="row">
         {/* LEFT – COURSE TABLE */}
-        <div className="col-md-7">
-          <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+        <div className="col-md-7" style={{ maxHeight: "70vh", display: "flex", flexDirection: "column" }}>
+          {/* Table heading + count – stays static */}
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h5 className="mb-0">Courses</h5>
+            <span className="badge bg-primary">{courses.length} total</span>
+          </div>
+
+          {/* Scrollable table */}
+          <div style={{ overflowY: "auto", flex: 1 }}>
             <table className="table table-bordered mb-0">
               <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 10 }}>
                 <tr>
@@ -114,13 +121,13 @@ function ManageCourses() {
                     <td>{c.video_expire_days}</td>
                     <td>
                       <button
-                        className="btn btn-sm btn-info me-1"
+                        className="btn btn-sm btn-outline-primary me-1"
                         onClick={() => handleEdit(c)}
                       >
                         Edit
                       </button>
                       <button
-                        className="btn btn-sm btn-danger"
+                        className="btn btn-sm btn-outline-danger"
                         onClick={() => handleDelete(c.course_id)}
                       >
                         Delete
@@ -139,6 +146,7 @@ function ManageCourses() {
             </table>
           </div>
         </div>
+
 
         {/* RIGHT – ADD / EDIT FORM */}
         <div className="col-md-5">
