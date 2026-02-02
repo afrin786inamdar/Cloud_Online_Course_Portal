@@ -17,6 +17,63 @@ const query = (sql, params) =>
     })
   })
 
+  /* =========================================
+   PUBLIC → VIEW ALL COURSES WITH VIDEOS
+========================================= */
+router.get('/public/courses-with-videos', async (req, res) => {
+  try {
+    const rows = await query(`
+      SELECT 
+        c.course_id,
+        c.course_name,
+        c.description,
+        c.fees,
+        c.start_date,
+        c.end_date,
+        c.expiry_days,
+        v.video_id,
+        v.title,
+        v.description AS video_description,
+        v.youtube_url
+      FROM courses c
+      LEFT JOIN videos v ON c.course_id = v.course_id
+      WHERE c.is_active = 1
+      ORDER BY c.course_id
+    `)
+
+    // Transform flat rows into grouped structure
+    const coursesMap = {}
+
+    rows.forEach(row => {
+      if (!coursesMap[row.course_id]) {
+        coursesMap[row.course_id] = {
+          course_id: row.course_id,
+          course_name: row.course_name,
+          description: row.description,
+          fees: row.fees,
+          start_date: row.start_date,
+          end_date: row.end_date,
+          expiry_days: row.expiry_days,
+          videos: []
+        }
+      }
+
+      if (row.video_id) {
+        coursesMap[row.course_id].videos.push({
+          video_id: row.video_id,
+          title: row.title,
+          description: row.video_description,
+          youtube_url: row.youtube_url
+        })
+      }
+    })
+
+    res.send(result.createResult(null, Object.values(coursesMap)))
+  } catch (error) {
+    res.send(result.createResult(error))
+  }
+})
+
 /* =========================================
    STUDENT → VIEW VIDEOS (ENROLLED ONLY)
 ========================================= */

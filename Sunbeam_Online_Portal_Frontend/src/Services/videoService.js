@@ -2,6 +2,12 @@
 import axios from "axios";
 import Config from "./Config";
 
+export async function getCoursesWithVideos() {
+  const response = await axios.get(
+    Config.BASE_URL + "/videos/public/courses-with-videos"
+  );
+  return response.data;
+}
 // 1. Get Videos by Course (Student/Admin)
 export async function getVideosByCourse(courseId, token) {
   const URL = Config.BASE_URL + "/videos?courseId=" + courseId;
