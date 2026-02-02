@@ -4,7 +4,7 @@ import Config from "./Config";
 
 // 1. Student - Get My Courses (Student)
 export async function getMyCourses(token) {
-  const URL = Config.BASE_URL + "/students";
+  const URL = Config.BASE_URL + "/students/";
 
   const response = await axios.get(URL, {
     headers: { Authorization: "Bearer " + token },
@@ -26,7 +26,7 @@ export async function getStudentList(token) {
 
 // 3. Admin - Update Student
 export async function updateStudent(studentId, studentData, token) {
-  const URL = Config.BASE_URL + "/students" + studentId;
+  const URL = Config.BASE_URL + "/students/" + studentId;
 
   const response = await axios.put(URL, studentData, {
     headers: { Authorization: "Bearer " + token },
