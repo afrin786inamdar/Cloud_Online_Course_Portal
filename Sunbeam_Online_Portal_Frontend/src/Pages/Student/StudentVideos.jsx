@@ -16,10 +16,10 @@ function StudentVideos() {
     const loadVideos = async () => {
         try {
             const res = await axios.get(
-                `${Config.BASE_URL}/videos/course/${courseId}`, // ✅ FIXED URL
+                `${Config.BASE_URL}/videos/course/${courseId}`, //  FIXED URL
                 {
                     headers: {
-                        Authorization: "Bearer " + user.token // ✅ FIXED TOKEN
+                        Authorization: "Bearer " + user.token //  FIXED TOKEN
                     }
                 }
             );
@@ -35,6 +35,7 @@ function StudentVideos() {
         }
     };
 
+    
     return (
         <div className="container mt-4">
             <h3>Course Videos</h3>
