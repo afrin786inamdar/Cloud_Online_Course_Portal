@@ -74,7 +74,7 @@ function About() {
                 comprehensively researched, innovative training methodologies,
                 deployment of technology and an emphasis on transformational
                 &amp; industry-relevant programs offering value-added services to
-                its clients.
+                its clients
               </p>
             </div>
           </div>
