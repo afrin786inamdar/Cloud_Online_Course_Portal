@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStudentList } from "../../Services/studentService";
+//import { getStudentList } from "../../Services/studentService";
 
 function StudentList() {
 

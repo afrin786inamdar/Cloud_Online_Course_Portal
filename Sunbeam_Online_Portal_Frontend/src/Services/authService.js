@@ -12,10 +12,10 @@ export async function loginUser(email, password) {
 }
 
 // 2. User Register
-export async function registerUser(name, email, password, mobile) {
-  const URL = Config.BASE_URL + "/auth/signup";
-  const body = { name, email, password, mobile };
-
-  const response = await axios.post(URL, body);
+export async function registerUser(data) {
+  const response = await axios.post(
+    Config.BASE_URL + "/auth/signup",
+    data
+  );
   return response.data;
 }
