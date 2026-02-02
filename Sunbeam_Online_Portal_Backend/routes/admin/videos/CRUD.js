@@ -30,21 +30,19 @@ router.get('/public/courses-with-videos', async (req, res) => {
         c.fees,
         c.start_date,
         c.end_date,
-        c.expiry_days,
+        c.video_expire_days,
         v.video_id,
         v.title,
         v.description AS video_description,
         v.youtube_url
       FROM courses c
       LEFT JOIN videos v ON c.course_id = v.course_id
-      WHERE c.is_active = 1
-      ORDER BY c.course_id
+      ORDER BY c.course_id, v.video_id
     `)
 
-    // Transform flat rows into grouped structure
     const coursesMap = {}
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       if (!coursesMap[row.course_id]) {
         coursesMap[row.course_id] = {
           course_id: row.course_id,
@@ -53,7 +51,7 @@ router.get('/public/courses-with-videos', async (req, res) => {
           fees: row.fees,
           start_date: row.start_date,
           end_date: row.end_date,
-          expiry_days: row.expiry_days,
+          video_expire_days: row.video_expire_days,
           videos: []
         }
       }
@@ -73,6 +71,8 @@ router.get('/public/courses-with-videos', async (req, res) => {
     res.send(result.createResult(error))
   }
 })
+
+
 
 /* =========================================
    STUDENT → VIEW VIDEOS (ENROLLED ONLY)
