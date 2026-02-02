@@ -1,76 +1,127 @@
-const express = require(`express`)
-const pool = require(`../../../db/pool`)
-const result = require(`../../../utils/result`)
+const express = require('express')
+const pool = require('../../../db/pool')
+const result = require('../../../utils/result')
+
 const { authUser } = require('../../../utils/authjwt')
 const { authorizeRole } = require('../../../utils/authorizeRole')
+const { checkEnrollment } = require('../../../middleware/checkEnrollment')
 
-const router  = express.Router();
-router.use(authUser)
-router.use(authorizeRole('admin'))
+const router = express.Router()
 
-
-
-router.get("/:course_id",(req,res) => {
-  const { course_id } = req.params;
-    const sql = `select * from videos where course_id=?`;
-    pool.query(sql,[course_id],(error,data) =>{
-        res.send(result.createResult(error,data))
+// helper
+const query = (sql, params) =>
+  new Promise((resolve, reject) => {
+    pool.query(sql, params, (err, data) => {
+      if (err) reject(err)
+      else resolve(data)
     })
-})
+  })
 
-router.post("/",(req,res)=>{
-    //Destructuring
-    const {course_id,title,description,youtube_url,added_at} = req.body;
-    const sql = `insert into videos(course_id,title,description,youtube_url) values(?,?,?,?)`
-        pool.query(sql,[course_id,title,description,youtube_url],(error,data) =>{
-        res.send(result.createResult(error,data))
-    })
-})
+/* =========================================
+   STUDENT → VIEW VIDEOS (ENROLLED ONLY)
+========================================= */
+router.get(
+  '/course/:courseId',
+  authUser,
+  authorizeRole('student'),
+  checkEnrollment,
+  async (req, res) => {
+    const { courseId } = req.params
 
-router.put('/:video_id', (req, res) => {
-  const { video_id } = req.params;
-  const { course_id, title, description, youtube_url } = req.body;
+    const videos = await query(
+      'SELECT * FROM videos WHERE course_id=?',
+      [courseId]
+    )
 
-  const fields = [];
-  const values = [];
-
-  if (course_id) {
-    fields.push('course_id=?');
-    values.push(course_id);
+    res.send(result.createResult(null, videos))
   }
-  if (title) {
-    fields.push('title=?');
-    values.push(title);
-  }
-  if (description) {
-    fields.push('description=?');
-    values.push(description);
-  }
-  if (youtube_url) {
-    fields.push('youtube_url=?');
-    values.push(youtube_url);
-  }
+)
 
-  if (fields.length === 0) {
-    return res.send(result.createResult('No fields provided for update', null));
-  }
+/* =========================================
+   ADMIN → ADD VIDEO
+========================================= */
+router.post(
+  '/',
+  authUser,
+  authorizeRole('admin'),
+  (req, res) => {
+    const { course_id, title, description, youtube_url } = req.body
 
-  const sql = `UPDATE videos SET ${fields.join(', ')} WHERE video_id=?`;
-  values.push(video_id);
+    const sql =
+      'INSERT INTO videos(course_id,title,description,youtube_url) VALUES (?,?,?,?)'
 
-  pool.query(sql, values, (error, data) => {
-    res.send(result.createResult(error, data));
-  });
-});
-
-router.delete("/:video_id", (req, res) => {
-    const { video_id } = req.params;
-
-    const sql = `delete from videos where video_id = ?`;
-
-    pool.query(sql,[video_id], (error, data) => {
+    pool.query(
+      sql,
+      [course_id, title, description, youtube_url],
+      (error, data) => {
         res.send(result.createResult(error, data))
-    })
-})
+      }
+    )
+  }
+)
 
-module.exports = router;
+/* =========================================
+   ADMIN → UPDATE VIDEO
+========================================= */
+router.put(
+  '/:video_id',
+  authUser,
+  authorizeRole('admin'),
+  (req, res) => {
+    const { video_id } = req.params
+    const { course_id, title, description, youtube_url } = req.body
+
+    const fields = []
+    const values = []
+
+    if (course_id) {
+      fields.push('course_id=?')
+      values.push(course_id)
+    }
+    if (title) {
+      fields.push('title=?')
+      values.push(title)
+    }
+    if (description) {
+      fields.push('description=?')
+      values.push(description)
+    }
+    if (youtube_url) {
+      fields.push('youtube_url=?')
+      values.push(youtube_url)
+    }
+
+    if (fields.length === 0) {
+      return res.send(result.createResult('No fields to update'))
+    }
+
+    const sql = `UPDATE videos SET ${fields.join(', ')} WHERE video_id=?`
+    values.push(video_id)
+
+    pool.query(sql, values, (error, data) => {
+      res.send(result.createResult(error, data))
+    })
+  }
+)
+
+/* =========================================
+   ADMIN → DELETE VIDEO
+========================================= */
+router.delete(
+  '/:video_id',
+  authUser,
+  authorizeRole('admin'),
+  (req, res) => {
+    const { video_id } = req.params
+
+    pool.query(
+      'DELETE FROM videos WHERE video_id=?',
+      [video_id],
+      (error, data) => {
+        res.send(result.createResult(error, data))
+      }
+    )
+  }
+)
+
+module.exports = router
