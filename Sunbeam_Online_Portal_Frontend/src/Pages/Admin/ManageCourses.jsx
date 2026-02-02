@@ -85,67 +85,67 @@ function ManageCourses() {
       <h4 className="text-primary mb-3">Admin – Manage Courses</h4>
 
       <div className="row">
-    {/* LEFT – COURSE TABLE */}
-<div className="col-md-7" style={{ maxHeight: "70vh", display: "flex", flexDirection: "column" }}>
-  {/* Table heading + count – stays static */}
-  <div className="d-flex justify-content-between align-items-center mb-2">
-    <h5 className="mb-0">Courses</h5>
-    <span className="badge bg-primary">{courses.length} total</span>
-  </div>
+        {/* LEFT – COURSE TABLE */}
+        <div className="col-md-7" style={{ maxHeight: "70vh", display: "flex", flexDirection: "column" }}>
+          {/* Table heading + count – stays static */}
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h5 className="mb-0">Courses</h5>
+            <span className="badge bg-primary">{courses.length} total</span>
+          </div>
 
-  {/* Scrollable table */}
-  <div style={{ overflowY: "auto", flex: 1 }}>
-    <table className="table table-bordered mb-0">
-      <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 10 }}>
-        <tr>
-          <th>ID</th>
-          <th>Name & Description</th>
-          <th>Fees</th>
-          <th>Dates</th>
-          <th>Expire (days)</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {courses.map((c) => (
-          <tr key={c.course_id}>
-            <td>{c.course_id}</td>
-            <td>
-              <b>{c.course_name}</b>
-              <div className="text-muted small">{c.description}</div>
-            </td>
-            <td>₹{c.fees}</td>
-            <td>
-              {c.start_date} <br /> {c.end_date}
-            </td>
-            <td>{c.video_expire_days}</td>
-            <td>
-              <button
-                className="btn btn-sm btn-outline-primary me-1"
-                onClick={() => handleEdit(c)}
-              >
-                Edit
-              </button>
-              <button
-                className="btn btn-sm btn-outline-danger"
-                onClick={() => handleDelete(c.course_id)}
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-        {courses.length === 0 && (
-          <tr>
-            <td colSpan="6" className="text-center text-muted">
-              No courses found
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
+          {/* Scrollable table */}
+          <div style={{ overflowY: "auto", flex: 1 }}>
+            <table className="table table-bordered mb-0">
+              <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                <tr>
+                  <th>ID</th>
+                  <th>Name & Description</th>
+                  <th>Fees</th>
+                  <th>Dates</th>
+                  <th>Expire (days)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courses.map((c) => (
+                  <tr key={c.course_id}>
+                    <td>{c.course_id}</td>
+                    <td>
+                      <b>{c.course_name}</b>
+                      <div className="text-muted small">{c.description}</div>
+                    </td>
+                    <td>₹{c.fees}</td>
+                    <td>
+                      {c.start_date} <br /> {c.end_date}
+                    </td>
+                    <td>{c.video_expire_days}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary me-1"
+                        onClick={() => handleEdit(c)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(c.course_id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {courses.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="text-center text-muted">
+                      No courses found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
 
         {/* RIGHT – ADD / EDIT FORM */}
