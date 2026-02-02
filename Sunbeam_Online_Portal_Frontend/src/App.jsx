@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./Components/Navbar.jsx";
-
+import AdminCourses from "./Pages/Admin/AdminCourses";
 import Home from "./Pages/Home.jsx";
 import About from "./Pages/About.jsx";
 import Login from "./Pages/Login.jsx";
@@ -9,7 +9,7 @@ import Register from "./Pages/Register.jsx";
 import StudentCourses from "./Pages/Student/StudentCourses.jsx";
 import StudentVideos from "./Pages/Student/StudentVideos.jsx";
 import ChangePassword from "./Pages/Student/ChangePassword";
-
+import AdminStudentList from "./Pages/Admin/AdminStudentList";
 import ManageCourses from "./Pages/Admin/ManageCourses.jsx";
 import ManageVideos from "./Pages/Admin/ManageVideos.jsx";
 import StudentList from "./Pages/Admin/StudentList.jsx";
@@ -35,6 +35,8 @@ function App() {
         <Route path="/admin/manage-videos" element={<ManageVideos />} />
         <Route path="/admin/students" element={<StudentList />} />
         <Route path="/student/videos/:courseId" element={<StudentVideos />} />
+        <Route path="/admin/students/:courseId" element={<AdminStudentList />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
         {/* OPTIONAL */}
         <Route path="*" element={<h2>Page Not Found</h2>} />
       </Routes>

@@ -1,7 +1,7 @@
 const express = require('express')
 const pool = require('../../../db/pool')
 const result = require('../../../utils/result')
-
+const { toEmbedUrl } = require('../../../utils/youtube');
 const { authUser } = require('../../../utils/authjwt')
 const { authorizeRole } = require('../../../utils/authorizeRole')
 const { checkEnrollment } = require('../../../middleware/checkEnrollment')
@@ -53,7 +53,7 @@ router.get('/public/courses-with-videos', async (req, res) => {
     // Group courses with videos
     const coursesMap = {};
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       if (!coursesMap[row.course_id]) {
         coursesMap[row.course_id] = {
           course_id: row.course_id,
@@ -62,6 +62,7 @@ router.get('/public/courses-with-videos', async (req, res) => {
           fees: row.fees,
           start_date: row.start_date,
           end_date: row.end_date,
+          video_expire_days: row.video_expire_days,
           video_expire_days: row.video_expire_days,
           videos: []
         };
@@ -93,6 +94,7 @@ router.get(
   checkEnrollment,
   async (req, res) => {
     const { courseId } = req.params;
+    const { courseId } = req.params;
 
     try {
       const videos = await query(
@@ -112,6 +114,7 @@ router.get(
     }
   }
 );
+);
 
 /* =========================================
    ADMIN → ADD VIDEO
@@ -121,7 +124,7 @@ router.post(
   authUser,
   authorizeRole('admin'),
   (req, res) => {
-    const { course_id, title, description, youtube_url } = req.body
+    const { course_id, title, description, youtube_url } = req.body;
 
     if (!course_id || !title || !description || !youtube_url) {
       return res.send(result.createResult('All fields required'))
@@ -138,12 +141,13 @@ router.post(
     pool.query(
       sql,
       [course_id, title, description, embedUrl],
+      [course_id, title, description, embedUrl],
       (error, data) => {
-        res.send(result.createResult(error, data))
+        res.send(result.createResult(error, data));
       }
-    )
+    );
   }
-)
+);
 
 /* =========================================
    ADMIN → UPDATE VIDEO

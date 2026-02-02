@@ -19,3 +19,4 @@ export async function registerUser(data) {
   );
   return response.data;
 }
+
