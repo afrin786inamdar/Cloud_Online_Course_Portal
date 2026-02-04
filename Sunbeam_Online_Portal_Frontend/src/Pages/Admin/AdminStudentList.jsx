@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Container, Table } from "react-bootstrap";
 import axios from "axios";
 import Config from "../../Services/Config";
-import { Table } from "react-bootstrap";
 
 function AdminStudentList() {
   const { courseId } = useParams();
   const [students, setStudents] = useState([]);
-
-  const admin = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     loadStudents();
@@ -17,10 +16,10 @@ function AdminStudentList() {
   const loadStudents = async () => {
     try {
       const res = await axios.get(
-        `${Config.BASE_URL}/admin/students/${courseId}`,
+        `${Config.BASE_URL}/admin/courses/${courseId}/students`,
         {
           headers: {
-            Authorization: "Bearer " + admin.token
+            Authorization: "Bearer " + user.token
           }
         }
       );
@@ -29,42 +28,41 @@ function AdminStudentList() {
         setStudents(res.data.data);
       }
     } catch (err) {
-      console.error(err);
-      alert("Unable to load students");
+      console.error("Error loading students", err);
     }
   };
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-info mb-3">Registered Students</h3>
+    <Container className="py-4">
+      <h3 className="mb-4 text-primary">
+        Registered Students
+      </h3>
 
       {students.length === 0 ? (
-        <p>No students enrolled</p>
+        <p>No students registered for this course</p>
       ) : (
         <Table bordered hover>
-          <thead className="table-info">
+          <thead>
             <tr>
-              <th>#</th>
+              <th>Reg No</th>
               <th>Name</th>
               <th>Email</th>
               <th>Mobile</th>
             </tr>
           </thead>
           <tbody>
-            {students.map((s, index) => (
-             <tr key={s.reg_no}>
-
-                <td>{index + 1}</td>
+            {students.map(s => (
+              <tr key={s.reg_no}>
+                <td>{s.reg_no}</td>
                 <td>{s.name}</td>
                 <td>{s.email}</td>
                 <td>{s.mobile_no}</td>
-
               </tr>
             ))}
           </tbody>
         </Table>
       )}
-    </div>
+    </Container>
   );
 }
 
