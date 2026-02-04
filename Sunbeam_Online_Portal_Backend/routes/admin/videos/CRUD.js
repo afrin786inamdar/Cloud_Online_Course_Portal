@@ -83,10 +83,7 @@ router.get('/public/courses-with-videos', async (req, res) => {
     res.send(result.createResult(error));
   }
 });
-
-/*===============================
-   STUDENT → VIEW VIDEOS (ENROLLED ONLY)
-========================================= */
+//new hide button for expired course 
 router.get(
   '/course/:courseId',
   authUser,
@@ -94,15 +91,33 @@ router.get(
   checkEnrollment,
   async (req, res) => {
     const { courseId } = req.params;
-    
 
     try {
+      // ✅ CHECK COURSE EXPIRY
+      const course = await query(
+        `SELECT end_date FROM courses WHERE course_id=?`,
+        [courseId]
+      );
+
+      if (course.length === 0) {
+        return res.send(result.createResult("Course not found"));
+      }
+
+      const endDate = new Date(course[0].end_date);
+      const today = new Date();
+
+      if (today > endDate) {
+        return res.send(
+          result.createResult("Course expired. Videos are no longer accessible.")
+        );
+      }
+
+      // ✅ FETCH VIDEOS
       const videos = await query(
         'SELECT * FROM videos WHERE course_id=?',
         [courseId]
       );
 
-      // 🔥 CONVERT YOUTUBE URL ON READ
       const fixedVideos = videos.map(v => ({
         ...v,
         youtube_url: toEmbedUrl(v.youtube_url)
