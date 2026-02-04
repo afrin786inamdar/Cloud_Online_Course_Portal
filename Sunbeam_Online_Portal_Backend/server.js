@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 
@@ -7,12 +6,14 @@ const coursesRouter = require("./routes/admin/courses/all-course");
 const studentsRouter = require("./routes/students/all-student");
 const videoRouter = require("./routes/admin/videos/CRUD");
 const adminStudentsRouter = require("./routes/students/getStudent");
+const adminCourseStudents = require("./routes/admin/courseStudents");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/admin", adminCourseStudents);
 
 app.use("/auth", authRoutes);
 app.use("/courses", coursesRouter);

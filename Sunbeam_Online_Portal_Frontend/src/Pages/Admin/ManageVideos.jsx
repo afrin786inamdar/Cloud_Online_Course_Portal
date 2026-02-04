@@ -1,5 +1,4 @@
-
-
+import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Config from "../../Services/Config";
@@ -8,7 +7,7 @@ function ManageVideos() {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = user?.token;
 
-  const [courses, setCourses] = useState([]); // all courses + videos
+  const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [video, setVideo] = useState({
     video_id: "",
@@ -19,7 +18,13 @@ function ManageVideos() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  const emptyVideo = { video_id: "", course_id: "", title: "", youtube_url: "", description: "" };
+  const emptyVideo = {
+    video_id: "",
+    course_id: "",
+    title: "",
+    youtube_url: "",
+    description: ""
+  };
 
   /* ===============================
      FETCH ALL COURSES WITH VIDEOS
@@ -27,12 +32,11 @@ function ManageVideos() {
   const fetchAllCoursesWithVideos = async () => {
     try {
       const res = await axios.get(
-        Config.BASE_URL + "/videos/public/courses-with-videos",
-        { headers: { Authorization: "Bearer " + token } } // optional if admin route requires auth
+        Config.BASE_URL + "/videos/public/courses-with-videos"
       );
       setCourses(res.data.data || []);
     } catch (error) {
-      console.error("Failed to fetch courses with videos:", error);
+      toast.error("Failed to fetch courses with videos ❌");
     }
   };
 
@@ -41,7 +45,7 @@ function ManageVideos() {
   }, []);
 
   /* ===============================
-     FILTERED COURSES BASED ON DROPDOWN
+     FILTERED COURSES
   =============================== */
   const visibleCourses = selectedCourseId
     ? courses.filter(c => c.course_id === Number(selectedCourseId))
@@ -52,7 +56,7 @@ function ManageVideos() {
   =============================== */
   const handleSubmit = async () => {
     if (!video.course_id || !video.title || !video.youtube_url) {
-      alert("Course, Title and YouTube URL are required");
+      toast.warning("Course, Title and YouTube URL are required ⚠️");
       return;
     }
 
@@ -63,23 +67,22 @@ function ManageVideos() {
           video,
           { headers: { Authorization: "Bearer " + token } }
         );
-        alert("Video updated");
+        toast.success("Video updated successfully ✅");
       } else {
         await axios.post(
           Config.BASE_URL + "/videos",
           video,
           { headers: { Authorization: "Bearer " + token } }
         );
-        alert("Video added");
+        toast.success("Video added successfully ✅");
       }
 
       setVideo(emptyVideo);
       setIsEditing(false);
-      await fetchAllCoursesWithVideos(); // reload everything
-      setSelectedCourseId(null); // optional: reset filter
+      await fetchAllCoursesWithVideos();
+      setSelectedCourseId(null);
     } catch (error) {
-      console.error("Failed to save video:", error);
-      alert("Error saving video");
+      toast.error("Error saving video ❌");
     }
   };
 
@@ -102,11 +105,11 @@ function ManageVideos() {
         Config.BASE_URL + "/videos/" + id,
         { headers: { Authorization: "Bearer " + token } }
       );
-      await fetchAllCoursesWithVideos(); // reload after delete
+      toast.success("Video deleted successfully ✅");
+      await fetchAllCoursesWithVideos();
       setSelectedCourseId(null);
     } catch (error) {
-      console.error("Failed to delete video:", error);
-      alert("Error deleting video");
+      toast.error("Error deleting video ❌");
     }
   };
 
@@ -115,20 +118,19 @@ function ManageVideos() {
       <h3 className="mb-3 text-primary">Admin – Manage Videos</h3>
 
       <div className="row">
-        {/* ================= LEFT TABLE ================= */}
+        {/* LEFT TABLE */}
         <div className="col-md-7">
-        <div className="card" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-
+          <div className="card" style={{ maxHeight: "80vh", overflowY: "auto" }}>
             <div className="card-header d-flex justify-content-between">
               <b>Videos</b>
 
               <select
                 className="form-select w-50"
                 value={selectedCourseId || ""}
-                onChange={e => setSelectedCourseId(e.target.value || null)}
+                onChange={(e) => setSelectedCourseId(e.target.value || null)}
               >
                 <option value="">All Courses</option>
-                {courses.map(c => (
+                {courses.map((c) => (
                   <option key={c.course_id} value={c.course_id}>
                     {c.course_name}
                   </option>
@@ -149,30 +151,42 @@ function ManageVideos() {
               <tbody>
                 {visibleCourses.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="text-center">No videos found</td>
+                    <td colSpan="5" className="text-center">
+                      No videos found
+                    </td>
                   </tr>
                 )}
 
-                {visibleCourses.map(course =>
+                {visibleCourses.map((course) =>
                   course.videos.length > 0 ? (
-                    course.videos.map(videoItem => (
+                    course.videos.map((videoItem) => (
                       <tr key={videoItem.video_id}>
                         <td>{videoItem.video_id}</td>
                         <td>{course.course_name}</td>
                         <td>{videoItem.title}</td>
                         <td>
-                          <a href={videoItem.youtube_url} target="_blank" rel="noreferrer">View</a>
+                          <a
+                            href={videoItem.youtube_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View
+                          </a>
                         </td>
                         <td>
                           <button
                             className="btn btn-sm btn-outline-primary me-1"
-                            onClick={() => editVideo(videoItem, course.course_id)}
+                            onClick={() =>
+                              editVideo(videoItem, course.course_id)
+                            }
                           >
                             Edit
                           </button>
                           <button
                             className="btn btn-sm btn-outline-danger"
-                            onClick={() => deleteVideo(videoItem.video_id)}
+                            onClick={() =>
+                              deleteVideo(videoItem.video_id)
+                            }
                           >
                             Delete
                           </button>
@@ -191,88 +205,86 @@ function ManageVideos() {
             </table>
           </div>
         </div>
-{/* ================= RIGHT FORM ================= */}
-<div className="col-md-5">
-  <div className="card">
-    <div className="card-header">
-      <b>{isEditing ? "Edit Video" : "Add New Video"}</b>
-    </div>
 
-    <div className="card-body">
-      <div className="mb-3">
-        <label className="form-label">Video ID (optional)</label>
-        <input
-          className="form-control"
-          placeholder="Auto-generated if left blank"
-          value={video.video_id}
-          disabled
-        />
-      </div>
+        {/* RIGHT FORM */}
+        <div className="col-md-5">
+          <div className="card">
+            <div className="card-header">
+              <b>{isEditing ? "Edit Video" : "Add New Video"}</b>
+            </div>
 
-      <div className="mb-3">
-        <label className="form-label">Course</label>
-        <select
-          className="form-select"
-          value={video.course_id}
-          onChange={(e) =>
-            setVideo({ ...video, course_id: e.target.value })
-          }
-        >
-          <option value="">Select course</option>
-          {courses.map(c => (
-            <option key={c.course_id} value={c.course_id}>
-              {c.course_name}
-            </option>
-          ))}
-        </select>
-      </div>
+            <div className="card-body">
+              <div className="mb-3">
+                <label className="form-label">Video ID (optional)</label>
+                <input
+                  className="form-control"
+                  value={video.video_id}
+                  disabled
+                />
+              </div>
 
-      <div className="mb-3">
-        <label className="form-label">Title</label>
-        <input
-          className="form-control"
-          value={video.title}
-          onChange={(e) =>
-            setVideo({ ...video, title: e.target.value })
-          }
-        />
-      </div>
+              <div className="mb-3">
+                <label className="form-label">Course</label>
+                <select
+                  className="form-select"
+                  value={video.course_id}
+                  onChange={(e) =>
+                    setVideo({ ...video, course_id: e.target.value })
+                  }
+                >
+                  <option value="">Select course</option>
+                  {courses.map((c) => (
+                    <option key={c.course_id} value={c.course_id}>
+                      {c.course_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-      <div className="mb-3">
-        <label className="form-label">YouTube URL</label>
-        <input
-          className="form-control"
-          value={video.youtube_url}
-          onChange={(e) =>
-            setVideo({ ...video, youtube_url: e.target.value })
-          }
-        />
-      </div>
+              <div className="mb-3">
+                <label className="form-label">Title</label>
+                <input
+                  className="form-control"
+                  value={video.title}
+                  onChange={(e) =>
+                    setVideo({ ...video, title: e.target.value })
+                  }
+                />
+              </div>
 
-      <div className="mb-3">
-        <label className="form-label">Description</label>
-        <textarea
-          className="form-control"
-          rows={3}
-          value={video.description}
-          onChange={(e) =>
-            setVideo({ ...video, description: e.target.value })
-          }
-        />
-      </div>
+              <div className="mb-3">
+                <label className="form-label">YouTube URL</label>
+                <input
+                  className="form-control"
+                  value={video.youtube_url}
+                  onChange={(e) =>
+                    setVideo({ ...video, youtube_url: e.target.value })
+                  }
+                />
+              </div>
 
-      <button
-        className="btn w-100 text-white"
-        style={{ backgroundColor: "#0d6efd" }} // Replace with your navbar color
-        onClick={handleSubmit}
-      >
-        {isEditing ? "Update Video" : "Add Video"}
-      </button>
-    </div>
-  </div>
-</div>
+              <div className="mb-3">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={video.description}
+                  onChange={(e) =>
+                    setVideo({ ...video, description: e.target.value })
+                  }
+                />
+              </div>
 
-
+              <button
+                className="btn w-100 text-white"
+                style={{ backgroundColor: "#0d6efd" }}
+                onClick={handleSubmit}
+              >
+                {isEditing ? "Update Video" : "Add Video"}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

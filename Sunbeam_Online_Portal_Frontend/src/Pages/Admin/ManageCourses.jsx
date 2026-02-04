@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Config from "../../Services/Config";
+import { toast } from "react-toastify";
 
 function ManageCourses() {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = user?.token;
+  const [deleteId, setDeleteId] = useState(null);
 
   const [courses, setCourses] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -20,7 +22,6 @@ function ManageCourses() {
 
   const [form, setForm] = useState(emptyCourse);
 
-  // 🔹 Fetch courses
   const fetchCourses = async () => {
     try {
       const res = await axios.get(Config.BASE_URL + "/courses", {
@@ -28,15 +29,14 @@ function ManageCourses() {
       });
       setCourses(res.data.data || []);
     } catch (err) {
-      console.error("Failed to fetch courses:", err);
+      toast.error("Failed to fetch courses ❌");
     }
   };
-
+  
   useEffect(() => {
     fetchCourses();
   }, []);
 
-  // 🔹 Add / Update
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -46,39 +46,53 @@ function ManageCourses() {
           form,
           { headers: { Authorization: "Bearer " + token } }
         );
+        toast.success("Course updated successfully ✅");
       } else {
         await axios.post(
           `${Config.BASE_URL}/courses`,
           form,
           { headers: { Authorization: "Bearer " + token } }
         );
+        toast.success("Course added successfully ✅");
       }
-
+  
       setForm(emptyCourse);
       setEditingId(null);
       fetchCourses();
     } catch (err) {
-      console.error("Failed to save course:", err);
+      toast.error("Failed to save course ❌");
     }
   };
-
+  
   const handleEdit = (course) => {
     setEditingId(course.course_id);
     setForm(course);
+    toast.info("Editing course ✏️");
   };
-
+  
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this course?")) return;
-
+    if (deleteId !== id) {
+      setDeleteId(id);
+      toast.warn("Click delete again to confirm ⚠️", {
+        autoClose: 2000
+      });
+      return;
+    }
+  
     try {
       await axios.delete(`${Config.BASE_URL}/courses/${id}`, {
         headers: { Authorization: "Bearer " + token }
       });
+  
+      toast.success("Course deleted successfully ✅");
+      setDeleteId(null);
       fetchCourses();
     } catch (err) {
-      console.error("Failed to delete course:", err);
+      toast.error("Failed to delete course ❌");
     }
   };
+  
+  
 
   return (
     <div className="container mt-4">

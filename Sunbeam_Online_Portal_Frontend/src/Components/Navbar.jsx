@@ -37,10 +37,15 @@ function Navbar() {
   }, [email]);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    window.dispatchEvent(new Event("authChanged"));
-    navigate("/login");
-  };
+  localStorage.removeItem("user");
+
+  // 🔥 navbar ko update karne ke liye
+  window.dispatchEvent(new Event("authChanged"));
+
+  // ✅ ALWAYS GO HOME
+  navigate("/", { replace: true });
+};
+
 
   const goToChangePassword = () => {
     navigate("/student/change-password"); // only student allowed
