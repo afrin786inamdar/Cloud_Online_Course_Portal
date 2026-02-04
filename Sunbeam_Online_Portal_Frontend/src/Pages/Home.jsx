@@ -15,21 +15,25 @@ function Home() {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const isLoggedIn = !!user;
   const isAdmin = user?.role === "admin";
+  const isStudent = user?.role === "student";
 
   // ================= LOAD DATA =================
   useEffect(() => {
-    if (isAdmin) {
-      loadRegisteredCourses();
-    } else {
-      loadCourses();
-      if (user?.token) {
-        loadMyCourses();
-      }
-    }
-  }, []);
+    loadCourses();
 
-  // ---------- STUDENT / GUEST ----------
+    if (isStudent) {
+      loadMyCourses();
+    }
+
+    if (isAdmin) {
+      loadAdminCourses();
+    }
+  }, []); // ❗ do NOT add dependencies
+
+  // ================= COURSES =================
   const loadCourses = async () => {
     try {
       const result = await getActiveCourses();
@@ -37,30 +41,31 @@ function Home() {
         setCourses(result.data);
       }
     } catch (err) {
-      console.error("Error loading courses:", err);
+      console.error(err);
     }
   };
 
+  // ================= STUDENT =================
   const loadMyCourses = async () => {
     try {
       const result = await getMyCourses(user.token);
       if (result.status === "success") {
-        setEnrolledIds(result.data.map(c => c.course_id));
+        setEnrolledIds(result.data.map(c => Number(c.course_id)));
       }
     } catch (err) {
-      console.error("Error loading enrolled courses:", err);
+      console.error(err);
     }
   };
 
-  // ---------- ADMIN ----------
-  const loadRegisteredCourses = async () => {
+  // ================= ADMIN =================
+  const loadAdminCourses = async () => {
     try {
       const res = await axios.get(
-        `${Config.BASE_URL}/admin/courses`,
+        `${Config.BASE_URL}/admin/courses-with-count`,
         {
           headers: {
-            Authorization: "Bearer " + user.token
-          }
+            Authorization: "Bearer " + user.token,
+          },
         }
       );
 
@@ -68,15 +73,20 @@ function Home() {
         setCourses(res.data.data);
       }
     } catch (err) {
-      console.error("Error loading admin courses:", err);
+      console.error(err);
     }
+  };
+
+  // ================= REGISTER =================
+  const handleRegister = (course) => {
+    localStorage.setItem("selectedCourse", JSON.stringify(course));
+    navigate("/register");
   };
 
   // ================= UI =================
   return (
     <div style={{ backgroundColor: "#f5f9fd", minHeight: "100vh" }}>
-
-      {/* ================= HERO SECTION (UNCHANGED) ================= */}
+      {/* HERO */}
       <div style={{ backgroundColor: "#e3f2fd" }} className="py-5">
         <Container>
           <Row className="align-items-center">
@@ -85,67 +95,31 @@ function Home() {
                 Learn Skills That Matter 🚀
               </h1>
               <p className="text-muted fs-5">
-                Join Sunbeam’s expert-led online courses and build
-                industry-ready skills in MERN, Python, and more.
+                Join Sunbeam’s expert-led online courses and build industry-ready skills.
               </p>
-
-              <div className="mt-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="me-3"
-                  onClick={() =>
-                    document
-                      .getElementById("courses")
-                      .scrollIntoView({ behavior: "smooth" })
-                  }
-                >
-                  Explore Courses
-                </Button>
-
-                {!user && (
-                  <Button
-                    variant="outline-primary"
-                    size="lg"
-                    onClick={() => navigate("/login")}
-                  >
-                    Login
-                  </Button>
-                )}
-              </div>
             </Col>
-
             <Col md={6} className="text-center">
-              <img
-                src={heroImg}
-                alt="Online Learning"
-                className="img-fluid"
-                style={{ maxHeight: "350px" }}
-              />
+              <img src={heroImg} alt="hero" className="img-fluid" />
             </Col>
           </Row>
         </Container>
       </div>
 
-      {/* ================= COURSES SECTION ================= */}
-      <Container className="py-5" id="courses">
+      {/* COURSES */}
+      <Container className="py-5">
         <h2 className="text-center mb-4 text-primary">
           {isAdmin ? "Registered Courses" : "Available Courses"}
         </h2>
 
         <Row>
-          {courses.length === 0 && (
-            <p className="text-center">No courses available</p>
-          )}
-
           {courses.map(course => {
-            const isEnrolled = enrolledIds.includes(course.course_id);
+            const isEnrolled = enrolledIds.includes(Number(course.course_id));
 
             return (
               <Col md={6} lg={4} key={course.course_id} className="mb-4">
                 <Card className="h-100 shadow-sm">
                   <Card.Body>
-                    <Card.Title className="fw-bold text-info">
+                    <Card.Title className="text-info">
                       {course.course_name}
                     </Card.Title>
 
@@ -155,18 +129,17 @@ function Home() {
                     <p><b>Start:</b> {course.start_date}</p>
                     <p><b>End:</b> {course.end_date}</p>
 
-                    {/* ================= ADMIN BUTTON ================= */}
+                    {/* ===== ADMIN ===== */}
                     {isAdmin && (
                       <>
                         <p className="text-success">
                           <b>Registered Students:</b> {course.student_count}
                         </p>
-
                         <Button
                           variant="info"
                           className="w-100"
                           onClick={() =>
-                            navigate(`/admin/students/${course.course_id}`)
+                            navigate(`/admin/courses/${course.course_id}/students`)
                           }
                         >
                           View Student List
@@ -174,54 +147,36 @@ function Home() {
                       </>
                     )}
 
-                    {/* ================= STUDENT / GUEST BUTTONS ================= */}
-                    {!isAdmin && (
-                      <>
-                        <div className="d-flex gap-2">
-                          {!user && (
-                            <Button
-                              variant="outline-info"
-                              onClick={() => navigate("/login")}
-                            >
-                              Login
-                            </Button>
-                          )}
+                    {/* ===== STUDENT ===== */}
+                    {isStudent && !isAdmin && (
+                      isEnrolled ? (
+                        <Button
+                          variant="outline-info"
+                          className="w-100"
+                          onClick={() => navigate("/student/courses")}
+                        >
+                          View Videos
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="info"
+                          className="w-100"
+                          onClick={() => handleRegister(course)}
+                        >
+                          Register
+                        </Button>
+                      )
+                    )}
 
-                          {user && !isEnrolled && (
-                            <Button
-                              variant="info"
-                              className="text-white"
-                              onClick={() => {
-                                localStorage.setItem(
-                                  "selectedCourse",
-                                  JSON.stringify({
-                                    course_id: course.course_id,
-                                    course_name: course.course_name
-                                  })
-                                );
-                                navigate("/register");
-                              }}
-                            >
-                              Register
-                            </Button>
-                          )}
-
-                          {isEnrolled && (
-                            <Button
-                              variant="outline-info"
-                              onClick={() => navigate("/student/courses")}
-                            >
-                              View Videos
-                            </Button>
-                          )}
-                        </div>
-
-                        <div className="mt-2 text-muted small">
-                          {isEnrolled
-                            ? "You are enrolled in this course"
-                            : "Register to unlock video lectures"}
-                        </div>
-                      </>
+                    {/* ===== GUEST ===== */}
+                    {!isLoggedIn && (
+                      <Button
+                        variant="info"
+                        className="w-100"
+                        onClick={() => handleRegister(course)}
+                      >
+                        Register
+                      </Button>
                     )}
                   </Card.Body>
                 </Card>

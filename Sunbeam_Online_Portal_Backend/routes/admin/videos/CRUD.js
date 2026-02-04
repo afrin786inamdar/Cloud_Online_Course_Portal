@@ -1,7 +1,7 @@
 const express = require('express')
 const pool = require('../../../db/pool')
 const result = require('../../../utils/result')
-const { toEmbedUrl } = require('../../../utils/youtube');
+//const { toEmbedUrl } = require('../../../utils/youtube');
 const { authUser } = require('../../../utils/authjwt')
 const { authorizeRole } = require('../../../utils/authorizeRole')
 const { checkEnrollment } = require('../../../middleware/checkEnrollment')
@@ -141,7 +141,7 @@ router.post(
     pool.query(
       sql,
       [course_id, title, description, embedUrl],
-      [course_id, title, description, embedUrl],
+      
       (error, data) => {
         res.send(result.createResult(error, data));
       }
