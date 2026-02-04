@@ -20,7 +20,7 @@ function Home() {
   const isAdmin = user?.role === "admin";
   const isStudent = user?.role === "student";
 
-  // ================= LOAD DATA =================
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
     loadCourses();
 
@@ -31,9 +31,9 @@ function Home() {
     if (isAdmin) {
       loadAdminCourses();
     }
-  }, []); // ❗ do NOT add dependencies
+  }, []);
 
-  // ================= COURSES =================
+  /* ================= COURSES ================= */
   const loadCourses = async () => {
     try {
       const result = await getActiveCourses();
@@ -45,7 +45,7 @@ function Home() {
     }
   };
 
-  // ================= STUDENT =================
+  /* ================= STUDENT ================= */
   const loadMyCourses = async () => {
     try {
       const result = await getMyCourses(user.token);
@@ -57,7 +57,7 @@ function Home() {
     }
   };
 
-  // ================= ADMIN =================
+  /* ================= ADMIN ================= */
   const loadAdminCourses = async () => {
     try {
       const res = await axios.get(
@@ -77,13 +77,18 @@ function Home() {
     }
   };
 
-  // ================= REGISTER =================
+  /* ================= REGISTER ================= */
   const handleRegister = (course) => {
     localStorage.setItem("selectedCourse", JSON.stringify(course));
     navigate("/register");
   };
 
-  // ================= UI =================
+  /* ================= COURSE EXPIRY ================= */
+  const isCourseExpired = (endDate) => {
+    return new Date(endDate) < new Date();
+  };
+
+  /* ================= UI ================= */
   return (
     <div style={{ backgroundColor: "#f5f9fd", minHeight: "100vh" }}>
       {/* HERO */}
@@ -148,15 +153,25 @@ function Home() {
                     )}
 
                     {/* ===== STUDENT ===== */}
-                    {isStudent && !isAdmin && (
+                    {isStudent && (
                       isEnrolled ? (
-                        <Button
-                          variant="outline-info"
-                          className="w-100"
-                          onClick={() => navigate("/student/courses")}
-                        >
-                          View Videos
-                        </Button>
+                        isCourseExpired(course.end_date) ? (
+                          <Button
+                            variant="secondary"
+                            className="w-100"
+                            disabled
+                          >
+                            Course Expired 🔒
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline-info"
+                            className="w-100"
+                            onClick={() => navigate("/student/courses")}
+                          >
+                            View Videos
+                          </Button>
+                        )
                       ) : (
                         <Button
                           variant="info"
