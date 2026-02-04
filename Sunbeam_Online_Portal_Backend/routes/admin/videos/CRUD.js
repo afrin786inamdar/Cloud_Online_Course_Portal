@@ -141,7 +141,7 @@ router.post(
     pool.query(
       sql,
       [course_id, title, description, embedUrl],
-      
+
       (error, data) => {
         res.send(result.createResult(error, data));
       }
